@@ -5,7 +5,7 @@ html5中 可以将xls 转成json 修改重新下载 的功能
 ###  [] 中括号 代表有路径 路径中的写法为 xxx(key)/xx(key1)    支持简写  key1/key2
 ### () 括号代表表示key值，只解析有key的内容
 ### <> 尖括号代表类型  type:  string (默认) | number | table (标识另一个tab页)   
- <number> | <table>{tab页签名}
+``` <number> | <table>{tab页签名} ```
 
  
 #### 基础场景:
