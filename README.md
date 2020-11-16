@@ -9,7 +9,7 @@ html5中 可以将xls 转成json 修改重新下载 的功能
 ## 注意 所有的列表都是从第三行开始计算，第一个预留为说明使用,第二行为标题
 #### 基础场景1:
 ```
-{
+{2
  "title" : "阅读数 22", 
  "href" : "http://www.google.com", 
 }
@@ -17,7 +17,7 @@ html5中 可以将xls 转成json 修改重新下载 的功能
 
 | 标题（title) | 链接（href) |
 | ------------- | ------------- |
-| 阅读数 2  | http://www.google.com  |
+| 阅读数 22  | http://www.google.com  |
 #### 基础场景1:
 ```
 [{
@@ -39,7 +39,7 @@ html5中 可以将xls 转成json 修改重新下载 的功能
 
 | [新闻(infos)]标题（title）| [新闻(infos)]链接（href）| [新闻(infos)/图标(icon)]图标名称（name） |
 | ------------- | ------------- | ------------- |
-| 阅读数 2  | http://www.google.com  | dot |
+| 阅读数 22  | http://www.google.com  | dot |
 
 ### 路径场景2：
 ```
@@ -56,7 +56,7 @@ html5中 可以将xls 转成json 修改重新下载 的功能
 
 | [新闻(infos)/0]标题（title）| [新闻(infos)/0]链接（href）| [新闻(infos)/0/图标(icon)/0]图标名称（name） | [新闻(infos)/1]标题（title）| [新闻(infos)/1]链接（href）| [新闻(infos)/1/图标(icon)/0]图标名称（name） |
 | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-| 阅读数 22 | http://www.google.com | dot | 阅读数 22 | http://www.baidu.com | six dot |
+| 阅读数 11 | http://www.google.com | dot | 阅读数 22 | http://www.baidu.com | zhuazi |
 
 
 ### list类型场景
@@ -74,10 +74,9 @@ html5中 可以将xls 转成json 修改重新下载 的功能
  
 | [新闻(infos)]标题（title）| [新闻(infos)]链接（href）| [新闻(infos)/图标(icon)]图标名称（name）&lt;list&gt; |
 | ------------- | ------------- | ------------- |
-| 阅读数 2  | http://www.google.com  | icon列表{3} |
-
-此时需要icon列表页签
+| 阅读数 22  | http://www.google.com  | icon列表{3} |
+| 阅读数 22  | http://www.google.com  | icon列表{3} |
+此时需要{icon列表}页签
 | 名称（name） |
 | ------------- |
 |  zhuazi | 
-|  我破 | 
