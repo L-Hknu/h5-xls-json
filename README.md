@@ -57,17 +57,18 @@ html5中 可以将xls 转成json 修改重新下载 的功能
   },{ 
   "title" : "阅读数 22", 
   "href" : "http://www.baidu.com", 
-  "icon" : [{ "name" : 	"zhuazi	" }]
+  "icon" : [{ "name" : 	"zhuazi	" },{"name":"zhouzi"}]
   }]
  ```
  
 | [新闻(infos)]标题（title）| [新闻(infos)]链接（href）| [新闻(infos)/图标(icon)]图标名称（name）&lt;list&gt; |
 | ------------- | ------------- | ------------- |
 | 阅读数 22  | http://www.google.com  | icon列表{3} |
-| 阅读数 22  | http://www.google.com  | icon列表{3} |
+| 阅读数 22  | http://www.google.com  | icon列表{3,4} |
 
 #### 此时需要{icon列表}页签
 
 | 名称（name） |
 | ------------- |
 |  zhuazi | 
+|  zhouzi | 
