@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        td {
+            border: 1px solid;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="https://www.baidu.com">baidu</a>
+    <input type="file" value="上传文件" /><button onclick="saveFile()">保存文件</button>
+    <div>预览:</div>
+    <div id='tableau'></div>
+    <script type="text/javascript" lang="javascript" src="./xlsx.full.min.js"></script>
+    <script type="text/javascript" lang="javascript" src="./operation.js"></script>
+    <script>
+        //匹配key
+        const keyRegex1 = /\(.+?\)/g, // () 小括号
+         keyRegex2 = /\（.+?\）/g, // () 小括号
+            //匹配是否包含路径
+            routeRegex = /\[.+?\]/g, // [] 中括号
+            typeRegex = /\<.+?\>/g; // <>花括号，大括号 number 
+            filterRegex = /\{.+?\}/g; // <>花括号，大括号 number 
+        const file = document.querySelector('input[type=file]')
+        file.addEventListener('change', handleFile, false);
+        const paichu = ['fd_code', 'fd_format_code', 'fd_name', 'fd_content', '所属页面', '所属tab']
+        const wopts = {
+            bookType: 'xlsx',
+            bookSST: false,
+            type: 'binary'
+        };
+        let workbook
+        const cache={}
+        //上传文件
+        function handleFile(e) {
+            var files = e.target.files,
+                f = files[0];
+            var reader = new FileReader();
+            reader.readAsArrayBuffer(f);
+            reader.onload = function (e) {
+                var data = new Uint8Array(e.target.result);
+                workbook = XLSX.read(data, {
+                    type: 'array'
+                });
+                // var wbout = XLSX.write(workbook,wopts);
+                console.log('表单内容', JSON.parse(JSON.stringify(workbook)))
+                //只处理第一页的数据
+                let SheetsKey = workbook.SheetNames[0]
+                let SheetsJson = XLSX.utils.sheet_to_json(workbook.Sheets[SheetsKey], {
+                    header: "A"
+                })
+                console.log('预解析字段', SheetsJson)
+                SheetsJson = getSheetsJson(SheetsKey,SheetsJson)
+                console.log('SheetsJson',SheetsJson)
+                workbook.Sheets[SheetsKey] = XLSX.utils.json_to_sheet(SheetsJson, {
+                    skipHeader: true
+                })
+                toHtml(workbook)
+            };
+        }
+        function getSheetsJson(SheetsKey,SheetsJson,isList=false){
+            const title= SheetsJson[1]
+            if(cache[SheetsKey]) return cache[SheetsKey]
+            SheetsJson.map((item, index) => {
+                    if (index > 1) {
+                        let json = {}
+                        for (const key in item) {
+                            //获取()的key
+                            const jsonkey = getKey(key,title)
+                            if(!jsonkey) continue
+                            let path =getRoute(key,title)
+                            const type = getType(key,title)
+                            let value = item[key] 
+                            // 排除非约定好的规则字段，已经确定固定字段，
+                            if (jsonkey && value && !paichu.includes(title[key]) && key &&title[key]) {
+                                if(type==='number'){
+                                    value=Number(value)
+                                }else if(typeof value ==='string'){
+                                    value=value.replace(filterRegex,'')
+                                }else if(type === 'boolean'){
+                                    if(value === 'true'){
+                                        value = true
+                                    }
+                                    if(value === 'false'){
+                                        value = false
+                                    }
+                                }
+                                if(type==='list'&&workbook.Sheets[value]){
+                                    const filter = getFilter(item[key])
+                                    console.log('list',value)
+                                    value=XLSX.utils.sheet_to_json(workbook.Sheets[value], {header: "A"})
+                                    value = getSheetsJson(value,true).filter((item,index)=>{
+                                        console.log('index',filter,item,index)
+                                        if(index>1){
+                                            if(filter){
+                                                return filter.includes(index)
+                                            }
+                                            return true
+                                        }
+                                    })
+                                }
+                                
+                                //获取[]的路径
+                                if(path){
+                                    if(path.includes('/')){
+                                        path =path.split('/')
+                                        path.push(jsonkey)
+                                    }else{
+                                        path = [path,jsonkey]
+                                    }
+                                    set(json,path,value)
+                                }else{
+                                    json[jsonkey] = value
+                                }
+                            }
+                        }
+                        if(isList){
+                            return json
+                        }else{
+                            item.D= JSON.stringify(json)
+                        }
+                        console.log('item',item)
+                        return item
+                    }else{
+                        return item
+                    }
+                })
+            cache[SheetsKey] =SheetsJson
+            return SheetsJson
+        }
+        //获取路径 没有回返回flase
+        function getRoute(key,title) {
+            const jsonkey = title[key].match(routeRegex)
+            if (jsonkey) {
+                return getContent(jsonkey[0].replace(/[\u4e00-\u9fa5]|\(|\)|\（|\）+/g,''))
+            } else {
+                return false
+            }
+        }
+
+        function getKey(key,title) {
+            if(!title[key]) return false
+            //去除类型和路由的的内容
+            let jsonkey = title[key].replace(typeRegex,'').replace(routeRegex,'').replace(filterRegex,'')
+
+            jsonkey = jsonkey.match(keyRegex1)||title[key].match(keyRegex2)
+
+            return jsonkey ? getContent(jsonkey[0]) : false
+        }
+        function getType(key,title) {
+            const jsonkey = title[key].match(typeRegex)
+            return jsonkey ? getContent(jsonkey) : false
+        }
+        function getFilter(value,title) {
+            const filter = value.match(filterRegex)
+            return filter ? getContent(filter).split(',').map(v=>Number(v)): false
+        }
+        //获取括号下的文本内容
+        function getContent(text) {
+            return text[0].length>1?text[0].substring(1, text[0].length - 1):text.substring(1, text.length - 1)
+         
+        }
+        //渲染到页面预览
+        function toHtml(workbook) {
+            var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            var container = document.getElementById('tableau');
+            console.log('workhseet',workbook,worksheet)
+            container.innerHTML = XLSX.utils.sheet_to_html(worksheet);
+        }
+        //下载文件
+        function saveFile() {
+            XLSX.writeFile(workbook, '已编码.xlsx');
+        }
+        // 根据路径设置内容
+      
+    </script>
+</body>
+
+</html>
